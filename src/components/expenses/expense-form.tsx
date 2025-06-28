@@ -17,13 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { toast } from "sonner";
+import { format, parse } from "date-fns";
 
 const expenseInitialState: Omit<Expense, "date"> = {
   description: "",
   amount: 0,
   category: "",
-  transaction_date: new Date().toISOString(),
+  transaction_date: format(new Date(), "yyyy-MM-dd"),
   transaction_type: "expense",
+  row_number: 0,
 };
 
 export function ExpenseForm({
@@ -38,9 +41,18 @@ export function ExpenseForm({
 
   const mutation = useMutation({
     mutationFn: (data: Expense) => appendExpense(user!.accessToken, data),
-    onSuccess: () => {
+    onMutate: () => {
+      const mutationToastId = toast.loading("Creating expense record...");
+      return {
+        toastId: mutationToastId,
+      };
+    },
+    onSuccess: (_, __, context) => {
       query.refetch();
       setExpense(expenseInitialState);
+      toast.success("Success creating expense record", {
+        id: context.toastId,
+      });
       onSuccess();
     },
   });
@@ -62,13 +74,15 @@ export function ExpenseForm({
         <Label htmlFor="date">Date</Label>
         <DateInput
           className="w-full"
-          date={new Date(expense.transaction_date)}
-          onChange={(date) =>
-            setExpense({
-              ...expense,
-              transaction_date: date?.toISOString() || "",
-            })
-          }
+          date={parse(expense.transaction_date, "yyyy-MM-dd", new Date())}
+          onChange={(date) => {
+            if (date) {
+              setExpense({
+                ...expense,
+                transaction_date: format(date, "yyyy-MM-dd") || "",
+              });
+            }
+          }}
         />
       </div>
 
@@ -142,7 +156,11 @@ export function ExpenseForm({
         />
       </div>
 
-      <Button type="submit" className="w-full" disabled={mutation.isPending}>
+      <Button
+        type="submit"
+        className="w-full cursor-pointer"
+        disabled={mutation.isPending}
+      >
         {mutation.isPending ? "Processing..." : "Add Expense"}
       </Button>
     </form>

@@ -5,4 +5,5 @@ export type Expense = {
   category: string;
   transaction_date: string;
   transaction_type: "expense" | "income";
+  row_number: number;
 };

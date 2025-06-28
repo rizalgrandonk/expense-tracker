@@ -29,7 +29,6 @@ export default function ExpenseSummary() {
   const selectedExpenses = grouped[selectedPeriod] ?? [];
 
   const chartGategoriesData = generateCategoriesChartData(selectedExpenses);
-  console.log({ chartGategoriesData });
 
   const totalExpense = selectedExpenses.reduce(
     (acc, expense) =>
@@ -56,7 +55,6 @@ export default function ExpenseSummary() {
     ],
   };
 
-  console.log({ chartCategoriesConfig });
   return (
     <div className="py-4 space-y-4">
       <div className="flex justify-between">

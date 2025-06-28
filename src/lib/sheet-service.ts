@@ -60,3 +60,49 @@ export const getExpenses = async (accessToken: string) => {
     };
   }
 };
+
+export const findExpenseRow = async (
+  accessToken: string,
+  createdDate: string
+) => {
+  const response = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!F:F`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  const data = await response.json();
+  const rows = data.values || [];
+  return rows.findIndex((row: string[]) => row[0] === createdDate) + 1; // +1 for Sheets 1-based index
+};
+
+export const deleteExpense = async (
+  accessToken: string,
+  createdDate: string
+) => {
+  const row = await findExpenseRow(accessToken, createdDate);
+  if (row < 1) throw new Error("Expense not found");
+
+  return await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        requests: [
+          {
+            deleteDimension: {
+              range: {
+                sheetId: 0, // First sheet
+                dimension: "ROWS",
+                startIndex: row - 1, // 0-based
+                endIndex: row,
+              },
+            },
+          },
+        ],
+      }),
+    }
+  );
+};

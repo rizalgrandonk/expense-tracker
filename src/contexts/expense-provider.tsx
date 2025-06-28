@@ -25,6 +25,13 @@ export default function ExpenseProvider({
     queryKey: ["expenses"],
     queryFn: () => (user ? getExpesesData(user.accessToken) : []),
     enabled: !!user,
+    retry(_, error) {
+      if (error.message === "Unauthorized") {
+        setUser(null);
+        return false;
+      }
+      return true;
+    },
   });
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
 
