@@ -85,7 +85,7 @@ function App() {
             <Button
               onClick={() => setIsFormOpen(true)}
               variant={"gradient"}
-              className="cursor-pointer hidden lg:inline-flex font-bold"
+              className="cursor-pointer inline-flex font-bold"
             >
               <Plus className="h-4 w-4" />
               Add Expense
