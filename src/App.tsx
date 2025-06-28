@@ -15,10 +15,11 @@ import { DisplayModeToggle } from "./components/DisplayModeToggle";
 import { useAuth } from "./hooks/useAuth";
 import { useExpense } from "./hooks/useExpense";
 import { useState } from "react";
+import ExpenseSummary from "./components/expenses/expense-summary";
 
 function App() {
   const { user } = useAuth();
-  const { expenses, query } = useExpense();
+  const { query } = useExpense();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
@@ -58,8 +59,10 @@ function App() {
                 <h2 className="text-xl font-semibold mb-4">Loading...</h2>
               </div>
             ) : null}
-            <div className="py-4">
-              <ExpenseList expenses={expenses} />
+            <ExpenseSummary />
+            <div className="py-4 space-y-2">
+              <h2 className="text-xl font-semibold">List Transaction</h2>
+              <ExpenseList />
             </div>
           </>
         ) : (

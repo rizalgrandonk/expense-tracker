@@ -11,14 +11,16 @@ import { format } from "date-fns";
 import { cn, formatCurrency } from "@/lib/utils";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { cva } from "class-variance-authority";
+import { useExpense } from "@/hooks/useExpense";
 
-type ExpenseListProps = {
-  expenses: Expense[];
-};
+export function ExpenseList() {
+  const { expenses } = useExpense();
 
-export function ExpenseList({ expenses }: ExpenseListProps) {
   const sortedExpenses = expenses.sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return (
+      new Date(b.transaction_date).getTime() -
+      new Date(a.transaction_date).getTime()
+    );
   });
 
   return (

@@ -48,6 +48,7 @@ export const useGoogleAuth = (
           onError();
         });
     },
+    scope: "https://www.googleapis.com/auth/spreadsheets",
   });
 };
 
