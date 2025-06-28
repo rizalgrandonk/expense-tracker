@@ -26,9 +26,11 @@ export default function ExpenseSummary() {
   );
 
   const grouped = groupExpensesByPeriod(expenses);
-  const chartGategoriesData = generateCategoriesChartData(expenses);
-
   const selectedExpenses = grouped[selectedPeriod] ?? [];
+
+  const chartGategoriesData = generateCategoriesChartData(selectedExpenses);
+  console.log({ chartGategoriesData });
+
   const totalExpense = selectedExpenses.reduce(
     (acc, expense) =>
       acc + (expense.transaction_type === "expense" ? expense.amount : 0),
@@ -53,6 +55,8 @@ export default function ExpenseSummary() {
       },
     ],
   };
+
+  console.log({ chartCategoriesConfig });
   return (
     <div className="py-4 space-y-4">
       <div className="flex justify-between">
@@ -106,36 +110,42 @@ export default function ExpenseSummary() {
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">Categories</h3>
             </div>
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="aspect-square lg:w-2/5">
-                <Doughnut data={chartCategoriesConfig} />
+            {selectedExpenses.length === 0 ? (
+              <div className="text-center py-12">
+                <h2 className="text-xl font-semibold mb-4">No expenses</h2>
               </div>
-              <div className="">
-                {chartGategoriesData.data.map((item) => (
-                  <div key={item.title} className="flex items-center gap-2">
-                    <span
-                      className="inline-block h-3 w-4 border"
-                      style={{
-                        backgroundColor: `hsla(${item.hueColor}, 70%, 50%, 0.2)`,
-                        borderColor: `hsla(${item.hueColor}, 70%, 50%, 1)`,
-                      }}
-                    />
-                    {item.type === "expense" ? (
-                      <ArrowUp className="h-4 w-4 text-rose-600" />
-                    ) : (
-                      <ArrowDown className="h-4 w-4 text-emerald-600" />
-                    )}
-                    <span className="text-muted-foreground">
-                      {item.category}
-                    </span>
-                    <span>{`${item.percentage}%`}</span>
-                    <span className="font-semibold">
-                      {`(${formatCurrency(item.total)})`}
-                    </span>
-                  </div>
-                ))}
+            ) : (
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="aspect-square lg:w-2/5">
+                  <Doughnut key={selectedPeriod} data={chartCategoriesConfig} />
+                </div>
+                <div className="">
+                  {chartGategoriesData.data.map((item) => (
+                    <div key={item.title} className="flex items-center gap-2">
+                      <span
+                        className="inline-block h-3 w-4 border"
+                        style={{
+                          backgroundColor: `hsla(${item.hueColor}, 70%, 50%, 0.2)`,
+                          borderColor: `hsla(${item.hueColor}, 70%, 50%, 1)`,
+                        }}
+                      />
+                      {item.type === "expense" ? (
+                        <ArrowUp className="h-4 w-4 text-rose-600" />
+                      ) : (
+                        <ArrowDown className="h-4 w-4 text-emerald-600" />
+                      )}
+                      <span className="text-muted-foreground">
+                        {item.category}
+                      </span>
+                      <span>{`${item.percentage}%`}</span>
+                      <span className="font-semibold">
+                        {`(${formatCurrency(item.total)})`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </Card>
         </div>
       </div>
