@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { cn, formatCurrency } from "@/lib/utils";
-import { ArrowDown, ArrowUp, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, MoreHorizontal, Trash } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useExpense } from "@/hooks/useExpense";
 import { Button } from "../ui/button";
@@ -28,6 +28,13 @@ import {
 } from "../ui/alert-dialog";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 export function ExpenseList() {
   const { expenses, query } = useExpense();
@@ -70,21 +77,23 @@ export function ExpenseList() {
 
   return (
     <>
-      <Table>
-        <TableHeader>
+      <Table containerClassName="rounded-xl border max-h-96 overflow-y-auto relative">
+        <TableHeader className="sticky top-0 bg-card">
           <TableRow>
+            <TableHead className="font-bold w-[10px]"></TableHead>
             <TableHead className="font-bold">Transaction Date</TableHead>
             <TableHead className="font-bold">Description</TableHead>
             <TableHead className="font-bold">Type</TableHead>
             <TableHead className="font-bold">Amount</TableHead>
             <TableHead className="font-bold">Category</TableHead>
-            <TableHead className="font-bold">Created At</TableHead>
-            <TableHead className="font-bold">Actions</TableHead>
+            {/* <TableHead className="font-bold">Created At</TableHead> */}
+            <TableHead className="font-bold w-[60px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedExpenses.map((expense) => (
             <TableRow key={expense.date}>
+              <TableCell></TableCell>
               <TableCell>
                 {format(new Date(expense.transaction_date), "dd MMM, yyyy")}
               </TableCell>
@@ -97,20 +106,26 @@ export function ExpenseList() {
               </TableCell>
               <TableCell>{expense.category}</TableCell>
               <TableCell>
-                {format(new Date(expense.date), "dd MMM, yyyy HH:mm")}
-              </TableCell>
-              <TableCell>
-                <Button
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setSelectedExpense(expense);
-                    setIsModalDeleteOpen(true);
-                  }}
-                  variant={"destructive"}
-                  size={"icon"}
-                >
-                  <Trash />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        setSelectedExpense(expense);
+                        setIsModalDeleteOpen(true);
+                      }}
+                    >
+                      <Trash /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
@@ -118,7 +133,12 @@ export function ExpenseList() {
       </Table>
       <DeleteExpenseDialog
         isOpen={isModalDeleteOpen}
-        setIsOpen={setIsModalDeleteOpen}
+        onOpenChange={(isOpen) => {
+          setIsModalDeleteOpen(isOpen);
+          if (!isOpen) {
+            setSelectedExpense(undefined);
+          }
+        }}
         onDelete={() =>
           selectedExpense && deleteMutation.mutate(selectedExpense)
         }
@@ -163,14 +183,14 @@ function TypeBadge({ type }: { type: Expense["transaction_type"] }) {
 function DeleteExpenseDialog({
   onDelete = () => {},
   isOpen,
-  setIsOpen,
+  onOpenChange,
 }: {
   onDelete?: () => void;
   isOpen?: boolean;
-  setIsOpen?: (isOpen: boolean) => void;
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -189,7 +209,7 @@ function DeleteExpenseDialog({
               className="text-white cursor-pointer"
               onClick={onDelete}
             >
-              Continue
+              Delete
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

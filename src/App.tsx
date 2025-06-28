@@ -29,13 +29,15 @@ function App() {
       <header className="container mx-auto px-2 flex justify-between items-center py-4 sticky top-0 z-10 bg-background">
         <h1 className="text-3xl font-bold">Expense Tracker</h1>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setIsFormOpen(true)}
-            className="cursor-pointer hidden lg:inline-flex"
-          >
-            <Plus className="h-4 w-4" />
-            Add Expense
-          </Button>
+          {user && (
+            <Button
+              onClick={() => setIsFormOpen(true)}
+              className="cursor-pointer hidden lg:inline-flex"
+            >
+              <Plus className="h-4 w-4" />
+              Add Expense
+            </Button>
+          )}
           <DisplayModeToggle />
           {user ? <UserButton /> : <LoginButton />}
         </div>
