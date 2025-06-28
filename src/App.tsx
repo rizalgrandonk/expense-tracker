@@ -35,6 +35,13 @@ function App() {
       <main>
         {user ? (
           <>
+            {query.isLoading ? (
+              <div className="text-center py-12">
+                <h2 className="text-xl font-semibold mb-4">Loading...</h2>
+              </div>
+            ) : null}
+            <ExpenseSummary />
+
             <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
               <div className="py-4">
                 <SheetTrigger asChild>
@@ -54,12 +61,6 @@ function App() {
               </SheetContent>
             </Sheet>
 
-            {query.isLoading ? (
-              <div className="text-center py-12">
-                <h2 className="text-xl font-semibold mb-4">Loading...</h2>
-              </div>
-            ) : null}
-            <ExpenseSummary />
             <div className="py-4 space-y-2">
               <h2 className="text-xl font-semibold">List Transaction</h2>
               <ExpenseList />

@@ -58,7 +58,7 @@ export default function ExpenseSummary() {
       <div className="flex justify-between">
         <h2 className="text-xl font-semibold">{`Summary ${periodTitle}`}</h2>
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="lg:w-48">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
@@ -71,7 +71,7 @@ export default function ExpenseSummary() {
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid lg:grid-cols-2 gap-2">
         <div className="grid grid-rows-3 gap-2">
           <Card className="flex flex-col gap-2 justify-center py-4 px-6">
             <div className="flex items-center gap-2">
@@ -102,17 +102,17 @@ export default function ExpenseSummary() {
           </Card>
         </div>
         <div>
-          <Card className="flex flex-col gap-2 justify-center py-4 px-6">
+          <Card className="h-full flex flex-col gap-2 justify-start py-4 px-6">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">Categories</h3>
             </div>
-            <div className="flex items-start gap-8">
-              <div className="h-80 aspect-square">
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="aspect-square lg:w-2/5">
                 <Doughnut data={chartCategoriesConfig} />
               </div>
-              <div>
+              <div className="">
                 {chartGategoriesData.data.map((item) => (
-                  <div className="flex items-center gap-2 text-lg">
+                  <div key={item.title} className="flex items-center gap-2">
                     <span
                       className="inline-block h-3 w-4 border"
                       style={{
