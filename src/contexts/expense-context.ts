@@ -7,9 +7,11 @@ export const ExpenseProviderContext = createContext<{
   expenses: Expense[];
   categories: string[];
   setCategories: (categories: string[]) => void;
+  groupedByPeriod: Record<string, Expense[]>;
 }>({
   query: {} as UseQueryResult<Expense[], Error>,
   expenses: [],
   categories: [],
   setCategories: () => {},
+  groupedByPeriod: {},
 });

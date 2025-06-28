@@ -13,21 +13,6 @@ import { ArrowDown, ArrowUp, MoreHorizontal, Trash } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useExpense } from "@/hooks/useExpense";
 import { Button } from "../ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import { deleteExpense } from "@/lib/sheet-service";
-import { useMutation } from "@tanstack/react-query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { useState } from "react";
-import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,31 +20,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import UserAvatar from "../user-avatar";
 
-export function ExpenseList() {
-  const { expenses, query } = useExpense();
-  const { user } = useAuth();
-
-  const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>(
-    undefined
-  );
-  const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
-
-  const deleteMutation = useMutation({
-    mutationFn: (data: Expense) => deleteExpense(user!.accessToken, data.date),
-    onMutate: () => {
-      const mutationToastId = toast.loading("Deleting expense record...");
-      return {
-        toastId: mutationToastId,
-      };
-    },
-    onSuccess: (_, __, context) => {
-      query.refetch();
-      toast.success("Success deleting expense record", {
-        id: context.toastId,
-      });
-    },
-  });
+export function ExpenseList({
+  onActionDelete = () => {},
+}: {
+  onActionDelete?: (expense: Expense) => void;
+}) {
+  const { expenses } = useExpense();
 
   const sortedExpenses = expenses.sort((a, b) => {
     const compareTrxDate =
@@ -78,9 +46,10 @@ export function ExpenseList() {
   return (
     <>
       <Table containerClassName="rounded-xl border max-h-96 overflow-y-auto relative">
-        <TableHeader className="sticky top-0 bg-card">
+        <TableHeader className="sticky z-10 top-0 bg-card">
           <TableRow>
             <TableHead className="font-bold w-[10px]"></TableHead>
+            <TableHead className="font-bold">User</TableHead>
             <TableHead className="font-bold">Transaction Date</TableHead>
             <TableHead className="font-bold">Description</TableHead>
             <TableHead className="font-bold">Type</TableHead>
@@ -94,6 +63,16 @@ export function ExpenseList() {
           {sortedExpenses.map((expense) => (
             <TableRow key={expense.date}>
               <TableCell></TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <UserAvatar
+                    className="h-8 w-8"
+                    name={expense.user_name}
+                    picture={expense.user_image}
+                  />
+                  <span>{expense.user_name}</span>
+                </div>
+              </TableCell>
               <TableCell>
                 {format(new Date(expense.transaction_date), "dd MMM, yyyy")}
               </TableCell>
@@ -118,8 +97,7 @@ export function ExpenseList() {
                     <DropdownMenuItem
                       variant="destructive"
                       onClick={() => {
-                        setSelectedExpense(expense);
-                        setIsModalDeleteOpen(true);
+                        onActionDelete(expense);
                       }}
                     >
                       <Trash /> Delete
@@ -131,18 +109,6 @@ export function ExpenseList() {
           ))}
         </TableBody>
       </Table>
-      <DeleteExpenseDialog
-        isOpen={isModalDeleteOpen}
-        onOpenChange={(isOpen) => {
-          setIsModalDeleteOpen(isOpen);
-          if (!isOpen) {
-            setSelectedExpense(undefined);
-          }
-        }}
-        onDelete={() =>
-          selectedExpense && deleteMutation.mutate(selectedExpense)
-        }
-      />
     </>
   );
 }
@@ -177,43 +143,5 @@ function TypeBadge({ type }: { type: Expense["transaction_type"] }) {
       )}
       {TYPE_MAP[type]}
     </span>
-  );
-}
-
-function DeleteExpenseDialog({
-  onDelete = () => {},
-  isOpen,
-  onOpenChange,
-}: {
-  onDelete?: () => void;
-  isOpen?: boolean;
-  onOpenChange?: (isOpen: boolean) => void;
-}) {
-  return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this
-            record.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel className="cursor-pointer">
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button
-              variant="destructive"
-              className="text-white cursor-pointer"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }

@@ -3,9 +3,9 @@ import { googleLogout, useGoogleLogin } from "@react-oauth/google";
 export type User = {
   accessToken: string;
   expires_in: number;
-  name?: string;
+  name: string;
   picture?: string;
-  email?: string;
+  email: string;
 };
 
 export const useGoogleAuth = (

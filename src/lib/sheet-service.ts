@@ -21,6 +21,9 @@ export const appendExpense = async (accessToken: string, expense: Expense) => {
             expense.amount,
             expense.category,
             expense.date,
+            expense.user_email,
+            expense.user_name,
+            expense.user_image,
           ],
         ],
       }),
@@ -32,7 +35,7 @@ export const appendExpense = async (accessToken: string, expense: Expense) => {
 export const getExpenses = async (accessToken: string) => {
   try {
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:F`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:I`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

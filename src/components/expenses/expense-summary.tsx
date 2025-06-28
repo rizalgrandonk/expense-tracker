@@ -20,12 +20,11 @@ ChartJS.register(ArcElement, Tooltip);
 const periodOptions = generatePeriodOptions();
 
 export default function ExpenseSummary() {
-  const { expenses } = useExpense();
+  const { groupedByPeriod: grouped } = useExpense();
   const [selectedPeriod, setSelectedPeriod] = useState(
     format(new Date(), "MMMM_yyyy")
   );
 
-  const grouped = groupExpensesByPeriod(expenses);
   const selectedExpenses = grouped[selectedPeriod] ?? [];
 
   const chartGategoriesData = generateCategoriesChartData(selectedExpenses);
@@ -56,21 +55,23 @@ export default function ExpenseSummary() {
   };
 
   return (
-    <div className="py-4 space-y-4">
-      <div className="flex justify-between">
-        <h2 className="text-xl font-semibold">{`Summary ${periodTitle}`}</h2>
-        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="lg:w-48">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            {periodOptions.map((period) => (
-              <SelectItem key={period} value={period}>
-                {period.split("_").join(" ")}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="space-y-3">
+      <div className="flex justify-between items-center bg-primary-gradient py-1.5 px-3 rounded-md">
+        <h2 className="text-lg font-semibold">{`Tracked in ${periodTitle}`}</h2>
+        <div className="rounded-md bg-background">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger size="sm" className="lg:w-48 text-foreground">
+              <SelectValue placeholder="Select" />
+            </SelectTrigger>
+            <SelectContent>
+              {periodOptions.map((period) => (
+                <SelectItem key={period} value={period}>
+                  {period.split("_").join(" ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-2">
@@ -155,19 +156,6 @@ const TYPE_MAP = {
   expense: "Expense",
   income: "Income",
 };
-
-function groupExpensesByPeriod(expenses: Expense[]) {
-  const groupedExpenses: Record<string, Expense[]> = {};
-  expenses.forEach((expense) => {
-    const period = format(new Date(expense.transaction_date), "MMMM_yyyy");
-    if (groupedExpenses[period]) {
-      groupedExpenses[period].push(expense);
-    } else {
-      groupedExpenses[period] = [expense];
-    }
-  });
-  return groupedExpenses;
-}
 
 function generatePeriodOptions() {
   const now = new Date();

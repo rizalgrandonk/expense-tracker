@@ -1,8 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ExpenseProviderContext } from "./expense-context";
 import { useQuery } from "@tanstack/react-query";
 import { getExpesesData } from "@/lib/expense-service";
+import { groupExpensesByPeriod } from "@/lib/expense-utils";
 
 type ExpenseProviderProps = { children: React.ReactNode };
 
@@ -51,8 +52,14 @@ export default function ExpenseProvider({
     }
   }, [error, setUser]);
 
+  const groupedByPeriod = useMemo(
+    () => groupExpensesByPeriod(expenses || []),
+    [expenses]
+  );
+
   const value = {
     expenses: expenses || [],
+    groupedByPeriod,
     categories,
     setCategories: (categories: string[]) => {
       setCategories(categories);

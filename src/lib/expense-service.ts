@@ -15,5 +15,8 @@ export async function getExpesesData(accessToken: string): Promise<Expense[]> {
     transaction_date: row[0],
     transaction_type: row[2] as "expense" | "income",
     row_number: i + 1,
+    user_email: row[6],
+    user_name: row[7],
+    user_image: row[8],
   }));
 }

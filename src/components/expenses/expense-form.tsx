@@ -27,6 +27,9 @@ const expenseInitialState: Omit<Expense, "date"> = {
   transaction_date: format(new Date(), "yyyy-MM-dd"),
   transaction_type: "expense",
   row_number: 0,
+  user_email: "",
+  user_name: "",
+  user_image: "",
 };
 
 export function ExpenseForm({
@@ -65,6 +68,9 @@ export function ExpenseForm({
     mutation.mutate({
       ...expense,
       date: new Date().toISOString(),
+      user_email: user.email,
+      user_name: user.name,
+      user_image: user.picture,
     });
   };
 

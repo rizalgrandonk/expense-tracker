@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,29 +7,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut } from "lucide-react";
+import UserAvatar from "../user-avatar";
 
 export function UserButton() {
   const { user, handleLogout } = useAuth();
-  // Extract initials from user's name
-  const initials = (user?.name || "")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-10 w-10 rounded-full cursor-pointer"
+          className="relative h-9 w-9 rounded-full cursor-pointer"
         >
-          <Avatar className="h-10 w-10">
-            {user?.picture ? (
-              <AvatarImage src={user.picture} alt={user.name} />
-            ) : null}
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+          <UserAvatar name={user?.name || ""} picture={user?.picture} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
