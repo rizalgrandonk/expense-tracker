@@ -1,9 +1,13 @@
 import type { Expense } from "@/types";
+import { v4 as uuid } from "uuid";
 
 const SPREADSHEET_ID = import.meta.env.VITE_SPREADSHEET_ID;
 const SHEET_NAME = "Expenses";
 
-export const appendExpense = async (accessToken: string, expense: Expense) => {
+export const appendExpense = async (
+  accessToken: string,
+  expense: Omit<Expense, "id">
+) => {
   const response = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:A:append?valueInputOption=USER_ENTERED`,
     {
@@ -15,6 +19,7 @@ export const appendExpense = async (accessToken: string, expense: Expense) => {
       body: JSON.stringify({
         values: [
           [
+            uuid(),
             expense.transaction_date,
             expense.description,
             expense.transaction_type,
@@ -35,7 +40,7 @@ export const appendExpense = async (accessToken: string, expense: Expense) => {
 export const getExpenses = async (accessToken: string) => {
   try {
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:I`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:J`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -64,24 +69,18 @@ export const getExpenses = async (accessToken: string) => {
   }
 };
 
-export const findExpenseRow = async (
-  accessToken: string,
-  createdDate: string
-) => {
+export const findExpenseRow = async (accessToken: string, id: string) => {
   const response = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!F:F`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SHEET_NAME}!A:A`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
   const data = await response.json();
   const rows = data.values || [];
-  return rows.findIndex((row: string[]) => row[0] === createdDate) + 1; // +1 for Sheets 1-based index
+  return rows.findIndex((row: string[]) => row[0] === id) + 1; // +1 for Sheets 1-based index
 };
 
-export const deleteExpense = async (
-  accessToken: string,
-  createdDate: string
-) => {
-  const row = await findExpenseRow(accessToken, createdDate);
+export const deleteExpense = async (accessToken: string, id: string) => {
+  const row = await findExpenseRow(accessToken, id);
   if (row < 1) throw new Error("Expense not found");
 
   return await fetch(

@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { format, parse } from "date-fns";
 
-const expenseInitialState: Omit<Expense, "date"> = {
+const expenseInitialState: Omit<Expense, "date" | "id"> = {
   description: "",
   amount: 0,
   category: "",
@@ -40,10 +40,11 @@ export function ExpenseForm({
   const { categories, setCategories, query } = useExpense();
   const { user } = useAuth();
   const [expense, setExpense] =
-    useState<Omit<Expense, "date">>(expenseInitialState);
+    useState<Omit<Expense, "date" | "id">>(expenseInitialState);
 
   const mutation = useMutation({
-    mutationFn: (data: Expense) => appendExpense(user!.accessToken, data),
+    mutationFn: (data: Omit<Expense, "id">) =>
+      appendExpense(user!.accessToken, data),
     onMutate: () => {
       const mutationToastId = toast.loading("Creating expense record...");
       return {

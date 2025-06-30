@@ -50,7 +50,7 @@ function App() {
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
 
   const deleteMutation = useMutation({
-    mutationFn: (data: Expense) => deleteExpense(user!.accessToken, data.date),
+    mutationFn: (data: Expense) => deleteExpense(user!.accessToken, data.id),
     onMutate: () => {
       const mutationToastId = toast.loading("Deleting expense record...");
       return {
@@ -132,7 +132,9 @@ function App() {
                   type="single"
                   value={listType}
                   onValueChange={(val) => {
-                    setListType(val as "list" | "table");
+                    if (val === "list" || val === "table") {
+                      setListType(val as "list" | "table");
+                    }
                   }}
                 >
                   <ToggleGroupItem value="list" className="px-3">
