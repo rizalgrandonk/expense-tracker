@@ -78,7 +78,7 @@ function App() {
       <header className="container mx-auto px-2 flex justify-between items-center py-4 sticky top-0 z-10 bg-background">
         <div className="flex items-center gap-3">
           {user && <UserButton />}
-          <h1 className="text-2xl font-bold">Expense Tracker</h1>
+          <h1 className="text-2xl font-bold">Monin</h1>
         </div>
         <div className="flex items-center gap-2">
           {user && (
