@@ -220,18 +220,22 @@ function generateCategoriesChartData(expenses: Expense[]) {
     category.percentage = Number(
       ((category.total / totalExpenses) * 100).toFixed(1)
     );
-    category.hueColor = Math.floor(60 * (i + 1));
+
+    category.hueColor = Math.floor((i * 137.508) % 360);
   });
 
   return {
     chartData: {
       labels: Object.values(categoriesMap).map((category) => category.title),
-      backgroundColors: Object.values(categoriesMap).map(
-        (category) => `hsla(${category.hueColor}, 70%, 50%, 0.2)`
-      ),
-      borderColors: Object.values(categoriesMap).map(
-        (category) => `hsla(${category.hueColor}, 80%, 50%, 1)`
-      ),
+      backgroundColors: Object.values(categoriesMap).map((category, i) => {
+        const sat = 75 + (i % 3) * 5; // 85-95% saturation
+        const light = 60 + (i % 2) * 5; // 65-70% lightness
+        return `hsla(${category.hueColor}, ${sat}%, ${light}%, 0.3)`;
+      }),
+      borderColors: Object.values(categoriesMap).map((category, i) => {
+        const lightAdjust = i % 2 === 0 ? 55 : 60; // Slight variation
+        return `hsl(${category.hueColor}, 100%, ${lightAdjust}%)`;
+      }),
       data: Object.values(categoriesMap).map((category) => category.total),
     },
     data: Object.values(categoriesMap),
