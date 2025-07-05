@@ -1,6 +1,7 @@
-import type { User } from "@/lib/google-auth";
 import { useEffect, useState } from "react";
 import { AuthProviderContext } from "./auth-context";
+import { auth, googleAuthProvider } from "@/config/firebase";
+import { signInWithPopup, type User } from "firebase/auth";
 
 type AuthProviderProps = { children: React.ReactNode };
 export default function AuthProvider({
@@ -8,40 +9,44 @@ export default function AuthProvider({
   ...props
 }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLogin = (user: User) => {
-    setUser(user);
-    localStorage.setItem("user", JSON.stringify(user));
+  const login = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleAuthProvider);
+      setUser(result.user);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+  const logout = async () => {
+    try {
+      await auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const value = {
     user,
-    setUser: (user: User | null) => {
-      setUser(user);
-      if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("user");
-      }
-    },
-    handleLogin,
-    handleLogout,
+    login,
+    logout,
   };
+
   return (
     <AuthProviderContext.Provider value={value} {...props}>
-      {children}
+      {!isLoading && children}
     </AuthProviderContext.Provider>
   );
 }

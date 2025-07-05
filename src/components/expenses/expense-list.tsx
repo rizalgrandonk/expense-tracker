@@ -29,19 +29,19 @@ export function ExpenseList({
 }) {
   const { expenses } = useExpense();
 
-  const sortedExpenses = expenses.sort((a, b) => {
-    const compareTrxDate =
-      new Date(b.transaction_date).getTime() -
-      new Date(a.transaction_date).getTime();
+  // const sortedExpenses = expenses.sort((a, b) => {
+  //   const compareTrxDate =
+  //     new Date(b.transaction_date).getTime() -
+  //     new Date(a.transaction_date).getTime();
 
-    if (compareTrxDate !== 0) {
-      return compareTrxDate;
-    }
+  //   if (compareTrxDate !== 0) {
+  //     return compareTrxDate;
+  //   }
 
-    const compateDate = new Date(b.date).getTime() - new Date(a.date).getTime();
+  //   const compateDate = new Date(b.date).getTime() - new Date(a.date).getTime();
 
-    return compateDate;
-  });
+  //   return compateDate;
+  // });
 
   return (
     <>
@@ -60,8 +60,8 @@ export function ExpenseList({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedExpenses.map((expense) => (
-            <TableRow key={expense.date}>
+          {expenses.map((expense) => (
+            <TableRow key={expense.id}>
               <TableCell></TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export function ExpenseList({
                 </div>
               </TableCell>
               <TableCell>
-                {format(new Date(expense.transaction_date), "dd MMM, yyyy")}
+                {format(expense.transaction_date.toDate(), "dd MMM, yyyy")}
               </TableCell>
               <TableCell>{expense.description}</TableCell>
               <TableCell>

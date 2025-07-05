@@ -26,7 +26,7 @@ export function ExpenseCard({ expense, className }: ExpenseCardProps) {
           <span className="text-sm font-bold">{expense.category}</span>
           <span className="text-base">{expense.description}</span>
           <span className="text-xs text-muted-foreground">
-            {format(new Date(expense.transaction_date), "dd MMMM yyyy")}
+            {format(expense.transaction_date.toDate(), "dd MMMM yyyy")}
           </span>
         </div>
       </div>

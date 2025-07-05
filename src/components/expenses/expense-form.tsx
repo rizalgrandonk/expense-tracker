@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { appendExpense } from "@/lib/sheet-service";
 import type { Expense } from "@/types";
 import DateInput from "../date-input";
 import { ComboInput } from "../combo-input";
@@ -19,17 +18,26 @@ import {
 } from "../ui/select";
 import { toast } from "sonner";
 import { format, parse } from "date-fns";
+import { createExpense } from "@/lib/expense-service";
+import { Timestamp } from "firebase/firestore";
 
-const expenseInitialState: Omit<Expense, "date" | "id"> = {
+type ExpenseFormInputs = Omit<
+  Expense,
+  | "date"
+  | "id"
+  | "user_uid"
+  | "user_email"
+  | "user_name"
+  | "user_image"
+  | "transaction_date"
+> & { trxDate: string };
+
+const expenseInitialState: ExpenseFormInputs = {
   description: "",
   amount: 0,
   category: "",
-  transaction_date: format(new Date(), "yyyy-MM-dd"),
+  trxDate: format(new Date(), "yyyy-MM-dd"),
   transaction_type: "expense",
-  row_number: 0,
-  user_email: "",
-  user_name: "",
-  user_image: "",
 };
 
 export function ExpenseForm({
@@ -40,11 +48,10 @@ export function ExpenseForm({
   const { categories, setCategories, query } = useExpense();
   const { user } = useAuth();
   const [expense, setExpense] =
-    useState<Omit<Expense, "date" | "id">>(expenseInitialState);
+    useState<ExpenseFormInputs>(expenseInitialState);
 
   const mutation = useMutation({
-    mutationFn: (data: Omit<Expense, "id">) =>
-      appendExpense(user!.accessToken, data),
+    mutationFn: (data: Omit<Expense, "id">) => createExpense(data),
     onMutate: () => {
       const mutationToastId = toast.loading("Creating expense record...");
       return {
@@ -63,15 +70,22 @@ export function ExpenseForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
+    if (!user || !user.email || !user.displayName || !user.uid) {
       return;
     }
+
+    const { trxDate, ...expenseData } = expense;
+
     mutation.mutate({
-      ...expense,
-      date: new Date().toISOString(),
+      ...expenseData,
+      date: Timestamp.now(),
+      transaction_date: Timestamp.fromDate(
+        parse(trxDate, "yyyy-MM-dd", new Date())
+      ),
+      user_uid: user.uid,
       user_email: user.email,
-      user_name: user.name,
-      user_image: user.picture,
+      user_name: user.displayName,
+      user_image: user.photoURL,
     });
   };
 
@@ -81,12 +95,12 @@ export function ExpenseForm({
         <Label htmlFor="date">Date</Label>
         <DateInput
           className="w-full"
-          date={parse(expense.transaction_date, "yyyy-MM-dd", new Date())}
+          date={parse(expense.trxDate, "yyyy-MM-dd", new Date())}
           onChange={(date) => {
             if (date) {
               setExpense({
                 ...expense,
-                transaction_date: format(date, "yyyy-MM-dd") || "",
+                trxDate: format(date, "yyyy-MM-dd") || "",
               });
             }
           }}

@@ -22,7 +22,6 @@ import { Card } from "./components/ui/card";
 import { formatCurrency } from "./lib/utils";
 import type { Expense } from "./types";
 import { useMutation } from "@tanstack/react-query";
-import { deleteExpense } from "./lib/sheet-service";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -36,10 +35,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import ExpenseCardList from "./components/expenses/expense-card-list";
 import { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group";
+import { deleteExpense } from "./lib/expense-service";
 
 function App() {
   const { user } = useAuth();
-  const { query, groupedByPeriod: periodExpeses } = useExpense();
+  const { query: expenseQuery, groupedByPeriod: periodExpeses } = useExpense();
   const { theme } = useTheme();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [listType, setListType] = useState<"list" | "table">("list");
@@ -50,7 +50,7 @@ function App() {
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
 
   const deleteMutation = useMutation({
-    mutationFn: (data: Expense) => deleteExpense(user!.accessToken, data.id),
+    mutationFn: (data: Expense) => deleteExpense(data.id),
     onMutate: () => {
       const mutationToastId = toast.loading("Deleting expense record...");
       return {
@@ -58,7 +58,7 @@ function App() {
       };
     },
     onSuccess: (_, __, context) => {
-      query.refetch();
+      expenseQuery.refetch();
       toast.success("Success deleting expense record", {
         id: context.toastId,
       });
@@ -99,7 +99,7 @@ function App() {
       <main className="container mx-auto px-2">
         {user ? (
           <>
-            {query.isLoading || !query.data ? (
+            {expenseQuery.isLoading || !expenseQuery.data ? (
               <div className="text-center py-12">
                 <h2 className="text-xl font-semibold mb-4">Loading...</h2>
               </div>

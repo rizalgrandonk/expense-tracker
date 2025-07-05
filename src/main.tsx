@@ -3,25 +3,23 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { ThemeProvider } from "./contexts/ThemeProvider.tsx";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthProvider from "./contexts/auth-provider.tsx";
 import ExpenseProvider from "./contexts/expense-provider.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// import { register } from "register-service-worker";
 
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <AuthProvider>
-            <ExpenseProvider>
-              <App />
-            </ExpenseProvider>
-          </AuthProvider>
+          <ExpenseProvider>
+            <App />
+          </ExpenseProvider>
         </ThemeProvider>
-      </GoogleOAuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   </StrictMode>
 );

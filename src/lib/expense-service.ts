@@ -1,23 +1,58 @@
+import { db } from "@/config/firebase";
 import type { Expense } from "@/types";
-import { getExpenses } from "./sheet-service";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { Converter } from "./utils";
 
-export async function getExpesesData(accessToken: string): Promise<Expense[]> {
-  const result = await getExpenses(accessToken);
-  if (!result.success) {
-    throw new Error(result.error);
+export async function getExpeses() {
+  try {
+    const collectionRef = collection(db, "expenses").withConverter(
+      Converter<Expense>()
+    );
+    const snaps = await getDocs(
+      query(
+        collectionRef,
+        orderBy("transaction_date", "desc"),
+        orderBy("date", "desc")
+      )
+    );
+    return snaps.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    }));
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+    return [];
   }
-  const data: string[][] = result.data;
-  return data.map((row, i) => ({
-    id: row[0],
-    date: row[6],
-    description: row[2],
-    amount: parseFloat(row[4]),
-    category: row[5],
-    transaction_date: row[1],
-    transaction_type: row[3] as "expense" | "income",
-    row_number: i + 1,
-    user_email: row[7],
-    user_name: row[8],
-    user_image: row[9],
-  }));
+}
+
+export async function createExpense(expense: Omit<Expense, "id">) {
+  try {
+    const collectionRef = collection(db, "expenses").withConverter(
+      Converter<Expense>()
+    );
+    const docRef = await addDoc(collectionRef, expense);
+    return { ...expense, id: docRef.id };
+  } catch (error) {
+    console.error("Error creating expense:", error);
+    return null;
+  }
+}
+
+export async function deleteExpense(id: string) {
+  try {
+    const docRef = doc(db, "expenses", id).withConverter(Converter<Expense>());
+    await deleteDoc(docRef);
+    return true;
+  } catch (error) {
+    console.error("Error deleting expense:", error);
+    return false;
+  }
 }

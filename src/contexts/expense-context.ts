@@ -8,10 +8,20 @@ export const ExpenseProviderContext = createContext<{
   categories: string[];
   setCategories: (categories: string[]) => void;
   groupedByPeriod: Record<string, Expense[]>;
+  groupedByUser: {
+    user_uid: string;
+    user_name: string;
+    user_email: string;
+    user_image: string | null;
+    total_expenses: number;
+    total_income: number;
+    expenses: Expense[];
+  }[];
 }>({
   query: {} as UseQueryResult<Expense[], Error>,
   expenses: [],
   categories: [],
   setCategories: () => {},
   groupedByPeriod: {},
+  groupedByUser: [],
 });

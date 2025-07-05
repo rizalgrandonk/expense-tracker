@@ -7,7 +7,7 @@ export default function UserAvatar({
   className,
 }: {
   name: string;
-  picture?: string;
+  picture?: string | null;
   className?: string;
 }) {
   const initials = (name || "")

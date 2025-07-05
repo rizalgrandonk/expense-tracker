@@ -14,13 +14,14 @@ import {
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Chart as ChartJS, ArcElement, Tooltip } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
+import UserAvatar from "../user-avatar";
 
 ChartJS.register(ArcElement, Tooltip);
 
 const periodOptions = generatePeriodOptions();
 
 export default function ExpenseSummary() {
-  const { groupedByPeriod: grouped } = useExpense();
+  const { groupedByPeriod: grouped, groupedByUser } = useExpense();
   const [selectedPeriod, setSelectedPeriod] = useState(
     format(new Date(), "MMMM_yyyy")
   );
@@ -76,33 +77,24 @@ export default function ExpenseSummary() {
 
       <div className="grid lg:grid-cols-2 gap-2">
         <div className="grid grid-rows-3 gap-2">
-          <Card className="flex flex-col gap-2 justify-center py-4 px-6">
-            <div className="flex items-center gap-2">
-              <ArrowUp className="text-rose-600" />
-              <h3 className="text-lg font-semibold">Expenses</h3>
-            </div>
-            <div className="text-4xl text-rose-600 font-bold">
-              {formatCurrency(totalExpense)}
-            </div>
-          </Card>
-          <Card className="flex flex-col gap-2 justify-center py-4 px-6">
-            <div className="flex items-center gap-2">
-              <ArrowDown className="text-emerald-600" />
-              <h3 className="text-lg font-semibold">Income</h3>
-            </div>
-            <div className="text-4xl text-emerald-600 font-bold">
-              {formatCurrency(totalIncome)}
-            </div>
-          </Card>
-          <Card className="flex flex-col gap-2 justify-center py-4 px-6">
-            <div className="flex items-center gap-2">
-              <ArrowUpDown className="text-sky-600" />
-              <h3 className="text-lg font-semibold">Difference</h3>
-            </div>
-            <div className="text-4xl text-sky-600 font-bold">
-              {formatCurrency(totalIncome - totalExpense)}
-            </div>
-          </Card>
+          <ExpenseWidget
+            groupedByUser={groupedByUser}
+            type="expense"
+            total={totalExpense}
+            title="Expense"
+          />
+          <ExpenseWidget
+            groupedByUser={groupedByUser}
+            type="income"
+            total={totalIncome}
+            title="Income"
+          />
+          <ExpenseWidget
+            groupedByUser={groupedByUser}
+            type="difference"
+            total={totalIncome - totalExpense}
+            title="Difference"
+          />
         </div>
         <div>
           <Card className="h-full flex flex-col gap-2 justify-start py-4 px-6">
@@ -114,33 +106,13 @@ export default function ExpenseSummary() {
                 <h2 className="text-xl font-semibold mb-4">No expenses</h2>
               </div>
             ) : (
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="aspect-square lg:w-2/5">
+              <div className="flex flex-col gap-6">
+                <div className="aspect-square lg:w-3/5 self-center">
                   <Doughnut key={selectedPeriod} data={chartCategoriesConfig} />
                 </div>
                 <div className="">
                   {chartGategoriesData.data.map((item) => (
-                    <div key={item.title} className="flex items-center gap-2">
-                      <span
-                        className="inline-block h-3 w-4 border"
-                        style={{
-                          backgroundColor: `hsla(${item.hueColor}, 70%, 50%, 0.2)`,
-                          borderColor: `hsla(${item.hueColor}, 70%, 50%, 1)`,
-                        }}
-                      />
-                      {item.type === "expense" ? (
-                        <ArrowUp className="h-4 w-4 text-rose-600" />
-                      ) : (
-                        <ArrowDown className="h-4 w-4 text-emerald-600" />
-                      )}
-                      <span className="text-muted-foreground">
-                        {item.category}
-                      </span>
-                      <span>{`${item.percentage}%`}</span>
-                      <span className="font-semibold">
-                        {`(${formatCurrency(item.total)})`}
-                      </span>
-                    </div>
+                    <CategoryLegendItem key={item.title} item={item} />
                   ))}
                 </div>
               </div>
@@ -148,6 +120,106 @@ export default function ExpenseSummary() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+const WIDGET_TEXT_COLOR_MAP = {
+  expense: "text-rose-600",
+  income: "text-emerald-600",
+  difference: "text-sky-600",
+};
+const WIDGET_ICON_MAP = {
+  expense: ArrowUp,
+  income: ArrowDown,
+  difference: ArrowUpDown,
+};
+
+type ExpenseWidgetProps = {
+  type: "expense" | "income" | "difference";
+  title: string;
+  total: number;
+  groupedByUser: {
+    user_uid: string;
+    user_name: string;
+    user_email: string;
+    user_image: string | null;
+    total_expenses: number;
+    total_income: number;
+    expenses: Expense[];
+  }[];
+};
+
+function ExpenseWidget({
+  groupedByUser,
+  type,
+  total,
+  title,
+}: ExpenseWidgetProps) {
+  const textColor = WIDGET_TEXT_COLOR_MAP[type];
+  const Icon = WIDGET_ICON_MAP[type];
+  return (
+    <Card className="flex flex-col gap-4 justify-around py-4 px-6">
+      <div className="flex flex-col gap-2 justify-center">
+        <div className="flex items-center gap-2">
+          <Icon className={`${textColor}`} />
+          <h3 className="text-lg font-semibold">{title}</h3>
+        </div>
+        <div className={`text-4xl ${textColor} font-bold`}>
+          {formatCurrency(total)}
+        </div>
+      </div>
+      <div className="grid grid-cols-2">
+        {groupedByUser.map((user) => {
+          const amount =
+            type === "difference"
+              ? user.total_income - user.total_expenses
+              : type === "expense"
+              ? user.total_expenses
+              : user.total_income;
+          return (
+            <div className="flex items-center gap-2" key={user.user_uid}>
+              <UserAvatar name={user.user_name} picture={user.user_image} />
+              <span className={`${textColor} font-bold`}>
+                {formatCurrency(amount)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+type CategoryLegendItemProps = {
+  item: {
+    title: string;
+    total: number;
+    percentage: number;
+    category: string;
+    type: string;
+    hueColor: number;
+  };
+};
+
+function CategoryLegendItem({ item }: CategoryLegendItemProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className="inline-block h-3 w-4 border"
+        style={{
+          backgroundColor: `hsla(${item.hueColor}, 70%, 50%, 0.2)`,
+          borderColor: `hsla(${item.hueColor}, 70%, 50%, 1)`,
+        }}
+      />
+      {item.type === "expense" ? (
+        <ArrowUp className="h-4 w-4 text-rose-600" />
+      ) : (
+        <ArrowDown className="h-4 w-4 text-emerald-600" />
+      )}
+      <span className="text-muted-foreground">{item.category}</span>
+      <span>{`${item.percentage}%`}</span>
+      <span className="font-semibold">{`(${formatCurrency(item.total)})`}</span>
     </div>
   );
 }

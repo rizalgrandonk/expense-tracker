@@ -11,27 +11,27 @@ export default function ExpenseCardList({
 }) {
   const { expenses } = useExpense();
 
-  const sortedExpenses = expenses.sort((a, b) => {
-    const compareTrxDate =
-      new Date(b.transaction_date).getTime() -
-      new Date(a.transaction_date).getTime();
+  // const sortedExpenses = expenses.sort((a, b) => {
+  //   const compareTrxDate =
+  //     new Date(b.transaction_date).getTime() -
+  //     new Date(a.transaction_date).getTime();
 
-    if (compareTrxDate !== 0) {
-      return compareTrxDate;
-    }
+  //   if (compareTrxDate !== 0) {
+  //     return compareTrxDate;
+  //   }
 
-    const compateDate = new Date(b.date).getTime() - new Date(a.date).getTime();
+  //   const compateDate = new Date(b.date).getTime() - new Date(a.date).getTime();
 
-    return compateDate;
-  });
+  //   return compateDate;
+  // });
 
   return (
     <div className="grid lg:grid-cols-2 gap-x-8 divide-y [&_.expense-card:last-child]:border-b max-h-96 overflow-y-auto px-1">
-      {sortedExpenses.map((expense) => (
-        <Popover key={expense.date}>
+      {expenses.map((expense) => (
+        <Popover key={expense.id}>
           <PopoverTrigger asChild>
             <button className="block text-left cursor-pointer hover:bg-accent px-1">
-              <ExpenseCard key={expense.date} expense={expense} />
+              <ExpenseCard key={expense.id} expense={expense} />
             </button>
           </PopoverTrigger>
           <PopoverContent align="start" className="space-y-4">

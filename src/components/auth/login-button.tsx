@@ -1,10 +1,8 @@
-import { useGoogleAuth } from "@/lib/google-auth";
 import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
 export function LoginButton() {
-  const { handleLogin, handleLogout } = useAuth();
-  const login = useGoogleAuth(handleLogin, handleLogout);
+  const { login } = useAuth();
 
   return (
     <Button
