@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Calendar1Icon } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns/format";
 
 export default function DateInput({
   date,
@@ -24,7 +25,7 @@ export default function DateInput({
           id="date"
           className={cn("w-48 justify-between font-normal", className)}
         >
-          {date ? date.toLocaleDateString() : "Select date"}
+          {date ? format(date, "dd MMM, yyyy") : "Select date"}
           <Calendar1Icon />
         </Button>
       </PopoverTrigger>

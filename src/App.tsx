@@ -17,7 +17,7 @@ import { useState } from "react";
 import ExpenseSummary from "./components/expenses/expense-summary";
 import { Toaster } from "@/components/ui/sonner";
 import { useTheme } from "./hooks/useTheme";
-import { format } from "date-fns";
+import { format } from "date-fns/format";
 import { Card } from "./components/ui/card";
 import { formatCurrency } from "./lib/utils";
 import type { Expense } from "./types";

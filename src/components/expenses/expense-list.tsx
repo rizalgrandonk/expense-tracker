@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import { format } from "date-fns/format";
 import { cn, formatCurrency } from "@/lib/utils";
 import { ArrowDown, ArrowUp, MoreHorizontal, Trash } from "lucide-react";
 import { cva } from "class-variance-authority";

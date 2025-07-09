@@ -1,7 +1,9 @@
 import { useExpense } from "@/hooks/useExpense";
 import { Card } from "../ui/card";
 import type { Expense } from "@/types";
-import { addMonths, format, subMonths } from "date-fns";
+import { format } from "date-fns/format";
+import { addMonths } from "date-fns/addMonths";
+import { subMonths } from "date-fns/subMonths";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -110,7 +112,7 @@ export default function ExpenseSummary() {
                 <div className="aspect-square lg:w-3/5 self-center">
                   <Doughnut key={selectedPeriod} data={chartCategoriesConfig} />
                 </div>
-                <div className="">
+                <div className="grid lg:grid-cols-2 gap-2">
                   {chartGategoriesData.data.map((item) => (
                     <CategoryLegendItem key={item.title} item={item} />
                   ))}
@@ -159,7 +161,7 @@ function ExpenseWidget({
   const textColor = WIDGET_TEXT_COLOR_MAP[type];
   const Icon = WIDGET_ICON_MAP[type];
   return (
-    <Card className="flex flex-col gap-4 justify-around py-4 px-6">
+    <Card className="flex flex-col gap-6 justify-around py-4 px-6">
       <div className="flex flex-col gap-2 justify-center">
         <div className="flex items-center gap-2">
           <Icon className={`${textColor}`} />
@@ -169,7 +171,7 @@ function ExpenseWidget({
           {formatCurrency(total)}
         </div>
       </div>
-      <div className="grid grid-cols-2">
+      <div className="grid lg:grid-cols-2 gap-2">
         {groupedByUser.map((user) => {
           const amount =
             type === "difference"
@@ -179,7 +181,11 @@ function ExpenseWidget({
               : user.total_income;
           return (
             <div className="flex items-center gap-2" key={user.user_uid}>
-              <UserAvatar name={user.user_name} picture={user.user_image} />
+              <UserAvatar
+                name={user.user_name}
+                picture={user.user_image}
+                className="h-8 w-8"
+              />
               <span className={`${textColor} font-bold`}>
                 {formatCurrency(amount)}
               </span>
@@ -204,22 +210,28 @@ type CategoryLegendItemProps = {
 
 function CategoryLegendItem({ item }: CategoryLegendItemProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 text-sm">
       <span
-        className="inline-block h-3 w-4 border"
+        className="block h-7 aspect-square border"
         style={{
           backgroundColor: `hsla(${item.hueColor}, 70%, 50%, 0.2)`,
           borderColor: `hsla(${item.hueColor}, 70%, 50%, 1)`,
         }}
       />
       {item.type === "expense" ? (
-        <ArrowUp className="h-4 w-4 text-rose-600" />
+        <ArrowUp className="h-5 aspect-square text-rose-600" />
       ) : (
-        <ArrowDown className="h-4 w-4 text-emerald-600" />
+        <ArrowDown className="h-5 aspect-square text-emerald-600" />
       )}
-      <span className="text-muted-foreground">{item.category}</span>
-      <span>{`${item.percentage}%`}</span>
-      <span className="font-semibold">{`(${formatCurrency(item.total)})`}</span>
+      <div className="space-y-1">
+        <span className="text-muted-foreground text-xs">{item.category}</span>
+        <div className="text-sm flex items-center gap-1">
+          <span>{`(${item.percentage}%)`}</span>
+          <span className="font-semibold">
+            {`${formatCurrency(item.total)}`}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

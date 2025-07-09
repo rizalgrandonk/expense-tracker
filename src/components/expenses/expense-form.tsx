@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { toast } from "sonner";
-import { format, parse } from "date-fns";
+import { format } from "date-fns/format";
+import { parse } from "date-fns/parse";
 import { createExpense } from "@/lib/expense-service";
 import { Timestamp } from "firebase/firestore";
 
@@ -30,11 +31,12 @@ type ExpenseFormInputs = Omit<
   | "user_name"
   | "user_image"
   | "transaction_date"
-> & { trxDate: string };
+  | "amount"
+> & { trxDate: string; amountStr: string };
 
 const expenseInitialState: ExpenseFormInputs = {
   description: "",
-  amount: 0,
+  amountStr: "",
   category: "",
   trxDate: format(new Date(), "yyyy-MM-dd"),
   transaction_type: "expense",
@@ -74,7 +76,7 @@ export function ExpenseForm({
       return;
     }
 
-    const { trxDate, ...expenseData } = expense;
+    const { trxDate, amountStr, ...expenseData } = expense;
 
     mutation.mutate({
       ...expenseData,
@@ -82,6 +84,7 @@ export function ExpenseForm({
       transaction_date: Timestamp.fromDate(
         parse(trxDate, "yyyy-MM-dd", new Date())
       ),
+      amount: Number(amountStr),
       user_uid: user.uid,
       user_email: user.email,
       user_name: user.displayName,
@@ -92,23 +95,7 @@ export function ExpenseForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 px-4">
       <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
-        <DateInput
-          className="w-full"
-          date={parse(expense.trxDate, "yyyy-MM-dd", new Date())}
-          onChange={(date) => {
-            if (date) {
-              setExpense({
-                ...expense,
-                trxDate: format(date, "yyyy-MM-dd") || "",
-              });
-            }
-          }}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">Type</Label>
         <Select
           value={expense.transaction_type}
           onValueChange={(value) =>
@@ -141,6 +128,40 @@ export function ExpenseForm({
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="category">Category</Label>
+        <ComboInput
+          options={categories}
+          value={expense.category}
+          onChange={(category) => setExpense({ ...expense, category })}
+          onAddCustom={(newCategory) => {
+            setCategories([...new Set([...categories, newCategory])]);
+          }}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount</Label>
+        <div className="flex items-stretch">
+          <span className="bg-muted px-3 inline-flex items-center rounded-l-md border-input">
+            Rp
+          </span>
+          <Input
+            id="amount"
+            type="number"
+            value={expense.amountStr}
+            className="rounded-l-none"
+            onChange={(e) =>
+              setExpense((prev) => {
+                const val = e.target.value;
+                return { ...prev, amountStr: val };
+              })
+            }
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Input
           id="description"
@@ -153,26 +174,17 @@ export function ExpenseForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          value={expense.amount}
-          onChange={(e) =>
-            setExpense({ ...expense, amount: Number(e.target.value) })
-          }
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <ComboInput
-          options={categories}
-          value={expense.category}
-          onChange={(category) => setExpense({ ...expense, category })}
-          onAddCustom={(newCategory) => {
-            setCategories([...new Set([...categories, newCategory])]);
+        <Label htmlFor="date">Date</Label>
+        <DateInput
+          className="w-full"
+          date={parse(expense.trxDate, "yyyy-MM-dd", new Date())}
+          onChange={(date) => {
+            if (date) {
+              setExpense({
+                ...expense,
+                trxDate: format(date, "yyyy-MM-dd") || "",
+              });
+            }
           }}
         />
       </div>

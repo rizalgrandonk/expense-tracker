@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format } from "date-fns/format";
 import type { Expense } from "@/types";
 import { cn, formatCurrency } from "@/lib/utils";
 import UserAvatar from "../user-avatar";

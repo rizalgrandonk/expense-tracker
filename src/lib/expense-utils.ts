@@ -1,5 +1,5 @@
 import type { Expense } from "@/types";
-import { format } from "date-fns";
+import { format } from "date-fns/format";
 
 export function groupExpensesByPeriod(expenses: Expense[]) {
   const groupedExpenses: Record<string, Expense[]> = {};
