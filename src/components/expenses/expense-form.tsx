@@ -95,6 +95,22 @@ export function ExpenseForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 px-4">
       <div className="space-y-2">
+        <Label htmlFor="date">Date</Label>
+        <DateInput
+          className="w-full"
+          date={parse(expense.trxDate, "yyyy-MM-dd", new Date())}
+          onChange={(date) => {
+            if (date) {
+              setExpense({
+                ...expense,
+                trxDate: format(date, "yyyy-MM-dd") || "",
+              });
+            }
+          }}
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="description">Type</Label>
         <Select
           value={expense.transaction_type}
@@ -170,22 +186,6 @@ export function ExpenseForm({
             setExpense({ ...expense, description: e.target.value })
           }
           required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
-        <DateInput
-          className="w-full"
-          date={parse(expense.trxDate, "yyyy-MM-dd", new Date())}
-          onChange={(date) => {
-            if (date) {
-              setExpense({
-                ...expense,
-                trxDate: format(date, "yyyy-MM-dd") || "",
-              });
-            }
-          }}
         />
       </div>
 

@@ -17,18 +17,45 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Chart as ChartJS, ArcElement, Tooltip } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import UserAvatar from "../user-avatar";
+import { groupExpensesByUser } from "@/lib/expense-utils";
 
 ChartJS.register(ArcElement, Tooltip);
 
 const periodOptions = generatePeriodOptions();
 
 export default function ExpenseSummary() {
-  const { groupedByPeriod: grouped, groupedByUser } = useExpense();
+  const { groupedByPeriod: grouped } = useExpense();
   const [selectedPeriod, setSelectedPeriod] = useState(
     format(new Date(), "MMMM_yyyy")
   );
+  const [selectedUserId, setSelectedUserId] = useState<string>("ALL");
 
-  const selectedExpenses = grouped[selectedPeriod] ?? [];
+  const expesesByMonth = grouped[selectedPeriod] ?? [];
+
+  const selectedExpenses =
+    selectedUserId === "ALL"
+      ? expesesByMonth
+      : expesesByMonth.filter((expense) => expense.user_uid == selectedUserId);
+
+  const groupedByUser = Object.entries(
+    groupExpensesByUser(selectedExpenses || [])
+  ).map(([key, value]) => ({
+    user_uid: key,
+    user_name: value[0].user_name,
+    user_email: value[0].user_email,
+    user_image: value[0].user_image,
+    total_expenses: value.reduce(
+      (acc, expense) =>
+        acc + (expense.transaction_type === "expense" ? expense.amount : 0),
+      0
+    ),
+    total_income: value.reduce(
+      (acc, expense) =>
+        acc + (expense.transaction_type === "income" ? expense.amount : 0),
+      0
+    ),
+    expenses: value,
+  }));
 
   const chartGategoriesData = generateCategoriesChartData(selectedExpenses);
 
@@ -57,42 +84,67 @@ export default function ExpenseSummary() {
     ],
   };
 
+  const userOptions = getUserOptions(expesesByMonth);
+
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center bg-primary-gradient py-1.5 px-3 rounded-md">
         <h2 className="text-lg font-semibold">{`Tracked in ${periodTitle}`}</h2>
-        <div className="rounded-md bg-background">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger size="sm" className="lg:w-48 text-foreground">
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-            <SelectContent>
-              {periodOptions.map((period) => (
-                <SelectItem key={period} value={period}>
-                  {period.split("_").join(" ")}
+        <div className="flex items-center gap-4">
+          <div className="rounded-md bg-background">
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger size="sm" className="lg:w-48 text-foreground">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {periodOptions.map((period) => (
+                  <SelectItem key={period} value={period}>
+                    {period.split("_").join(" ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="rounded-md bg-background">
+            <Select
+              value={selectedUserId ?? undefined}
+              onValueChange={setSelectedUserId}
+            >
+              <SelectTrigger size="sm" className="lg:w-48 text-foreground">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem key={"ALL"} value={"ALL"}>
+                  All
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                {userOptions.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-2">
         <div className="grid grid-rows-3 gap-2">
           <ExpenseWidget
-            groupedByUser={groupedByUser}
+            groupedByUser={selectedUserId === "ALL" ? groupedByUser : undefined}
             type="expense"
             total={totalExpense}
             title="Expense"
           />
           <ExpenseWidget
-            groupedByUser={groupedByUser}
+            groupedByUser={selectedUserId === "ALL" ? groupedByUser : undefined}
             type="income"
             total={totalIncome}
             title="Income"
           />
           <ExpenseWidget
-            groupedByUser={groupedByUser}
+            groupedByUser={selectedUserId === "ALL" ? groupedByUser : undefined}
             type="difference"
             total={totalIncome - totalExpense}
             title="Difference"
@@ -141,7 +193,7 @@ type ExpenseWidgetProps = {
   type: "expense" | "income" | "difference";
   title: string;
   total: number;
-  groupedByUser: {
+  groupedByUser?: {
     user_uid: string;
     user_name: string;
     user_email: string;
@@ -171,28 +223,30 @@ function ExpenseWidget({
           {formatCurrency(total)}
         </div>
       </div>
-      <div className="grid lg:grid-cols-2 gap-2">
-        {groupedByUser.map((user) => {
-          const amount =
-            type === "difference"
-              ? user.total_income - user.total_expenses
-              : type === "expense"
-              ? user.total_expenses
-              : user.total_income;
-          return (
-            <div className="flex items-center gap-2" key={user.user_uid}>
-              <UserAvatar
-                name={user.user_name}
-                picture={user.user_image}
-                className="h-8 w-8"
-              />
-              <span className={`${textColor} font-bold`}>
-                {formatCurrency(amount)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+      {!!groupedByUser && (
+        <div className="grid lg:grid-cols-2 gap-2">
+          {groupedByUser.map((user) => {
+            const amount =
+              type === "difference"
+                ? user.total_income - user.total_expenses
+                : type === "expense"
+                ? user.total_expenses
+                : user.total_income;
+            return (
+              <div className="flex items-center gap-2" key={user.user_uid}>
+                <UserAvatar
+                  name={user.user_name}
+                  picture={user.user_image}
+                  className="h-8 w-8"
+                />
+                <span className={`${textColor} font-bold`}>
+                  {formatCurrency(amount)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }
@@ -324,4 +378,25 @@ function generateCategoriesChartData(expenses: Expense[]) {
     },
     data: Object.values(categoriesMap),
   };
+}
+
+function getUserOptions(expenses: Expense[]) {
+  const userMap: {
+    [key: string]: {
+      id: string;
+      name: string;
+    };
+  } = {};
+
+  expenses.forEach((expense) => {
+    if (userMap[expense.user_uid]) {
+      return;
+    }
+    userMap[expense.user_uid] = {
+      id: expense.user_uid,
+      name: expense.user_name,
+    };
+  });
+
+  return Object.values(userMap);
 }
