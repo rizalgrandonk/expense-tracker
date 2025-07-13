@@ -21,6 +21,7 @@ import { format } from "date-fns/format";
 import { parse } from "date-fns/parse";
 import { createExpense } from "@/lib/expense-service";
 import { Timestamp } from "firebase/firestore";
+import PriceInput from "../price-input";
 
 type ExpenseFormInputs = Omit<
   Expense,
@@ -157,24 +158,16 @@ export function ExpenseForm({
 
       <div className="space-y-2">
         <Label htmlFor="amount">Amount</Label>
-        <div className="flex items-stretch">
-          <span className="bg-muted px-3 inline-flex items-center rounded-l-md border-input">
-            Rp
-          </span>
-          <Input
-            id="amount"
-            type="number"
-            value={expense.amountStr}
-            className="rounded-l-none"
-            onChange={(e) =>
-              setExpense((prev) => {
-                const val = e.target.value;
-                return { ...prev, amountStr: val };
-              })
-            }
-            required
-          />
-        </div>
+        <PriceInput
+          id="amount"
+          value={expense.amountStr}
+          onChange={(value) =>
+            setExpense({
+              ...expense,
+              amountStr: value || "",
+            })
+          }
+        />
       </div>
 
       <div className="space-y-2">

@@ -13,11 +13,14 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCurrency(
   value: number,
   locale: string = "id-ID",
-  currency: string = "IDR"
+  currency: string = "IDR",
+  withSymbol: boolean = true
 ) {
   return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
+    style: withSymbol ? "currency" : "decimal",
+    currency: withSymbol ? currency : undefined,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(value);
 }
 

@@ -165,9 +165,11 @@ export default function ExpenseSummary() {
                   <Doughnut key={selectedPeriod} data={chartCategoriesConfig} />
                 </div>
                 <div className="grid lg:grid-cols-2 gap-2">
-                  {chartGategoriesData.data.map((item) => (
-                    <CategoryLegendItem key={item.title} item={item} />
-                  ))}
+                  {chartGategoriesData.data
+                    .sort((a, b) => b.total - a.total)
+                    .map((item) => (
+                      <CategoryLegendItem key={item.title} item={item} />
+                    ))}
                 </div>
               </div>
             )}
