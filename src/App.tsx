@@ -8,7 +8,7 @@ import {
   SheetTitle,
 } from "./components/ui/sheet";
 import { Button } from "./components/ui/button";
-import { List, Plus, Table } from "lucide-react";
+import { List, Plus, Table, File } from "lucide-react";
 import { UserButton } from "./components/auth/user-button";
 import { DisplayModeToggle } from "./components/DisplayModeToggle";
 import { useAuth } from "./hooks/useAuth";
@@ -36,6 +36,7 @@ import {
 import ExpenseCardList from "./components/expenses/expense-card-list";
 import { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group";
 import { deleteExpense } from "./lib/expense-service";
+import ExportModal from "./components/export-model";
 
 function App() {
   const { user } = useAuth();
@@ -48,6 +49,7 @@ function App() {
     undefined
   );
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
+  const [isModalExportOpen, setIsModalExportOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: (data: Expense) => deleteExpense(data.id),
@@ -127,23 +129,34 @@ function App() {
             <div className="py-5 space-y-3">
               <div className="flex justify-between">
                 <h2 className="text-lg">Monin Records</h2>
-                <ToggleGroup
-                  variant="outline"
-                  type="single"
-                  value={listType}
-                  onValueChange={(val) => {
-                    if (val === "list" || val === "table") {
-                      setListType(val as "list" | "table");
-                    }
-                  }}
-                >
-                  <ToggleGroupItem value="list" className="px-3">
-                    <List />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="table" className="px-3">
-                    <Table />
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="gradient"
+                    onClick={() => setIsModalExportOpen(true)}
+                    className="cursor-pointer inline-flex font-bold"
+                  >
+                    <File className="h-4 w-4" />
+                    Export Data
+                  </Button>
+
+                  <ToggleGroup
+                    variant="outline"
+                    type="single"
+                    value={listType}
+                    onValueChange={(val) => {
+                      if (val === "list" || val === "table") {
+                        setListType(val as "list" | "table");
+                      }
+                    }}
+                  >
+                    <ToggleGroupItem value="list" className="px-3">
+                      <List />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="table" className="px-3">
+                      <Table />
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
               </div>
               {listType === "list" && (
                 <ExpenseCardList
@@ -188,6 +201,13 @@ function App() {
         onDelete={() =>
           selectedExpense && deleteMutation.mutate(selectedExpense)
         }
+      />
+
+      <ExportModal
+        isOpen={isModalExportOpen}
+        onOpenChange={(isOpen) => {
+          setIsModalExportOpen(isOpen);
+        }}
       />
 
       <Toaster theme={theme} position="top-center" />

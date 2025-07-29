@@ -8,6 +8,8 @@ import {
   getDocs,
   orderBy,
   query,
+  Timestamp,
+  where,
 } from "firebase/firestore";
 import { Converter } from "./utils";
 
@@ -19,6 +21,33 @@ export async function getExpeses() {
     const snaps = await getDocs(
       query(
         collectionRef,
+        orderBy("transaction_date", "desc"),
+        orderBy("date", "desc")
+      )
+    );
+    return snaps.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    }));
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+    return [];
+  }
+}
+
+export async function getExpesesWithinDateRange(
+  start: Timestamp,
+  end: Timestamp
+) {
+  try {
+    const collectionRef = collection(db, "expenses").withConverter(
+      Converter<Expense>()
+    );
+    const snaps = await getDocs(
+      query(
+        collectionRef,
+        where("transaction_date", ">=", start),
+        where("transaction_date", "<=", end),
         orderBy("transaction_date", "desc"),
         orderBy("date", "desc")
       )
