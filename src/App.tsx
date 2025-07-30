@@ -36,7 +36,7 @@ import {
 import ExpenseCardList from "./components/expenses/expense-card-list";
 import { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group";
 import { deleteExpense } from "./lib/expense-service";
-import ExportModal from "./components/export-model";
+import ExportModal from "./components/export-modal";
 
 function App() {
   const { user } = useAuth();

@@ -22,10 +22,10 @@ import { format } from "date-fns/format";
 
 export default function ExportModal({
   isOpen,
-  onOpenChange,
+  onOpenChange = () => {},
 }: {
   isOpen?: boolean;
-  onOpenChange?: (isOpen: boolean) => void;
+  onOpenChange: (isOpen: boolean) => void;
 }) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
@@ -62,7 +62,15 @@ export default function ExportModal({
         item.transaction_type === "expense" ? "Expense" : "Income",
     }));
 
-    exportExpensesToExcel(exportData, `${dateRangePreview(dateRange)}.xlsx`);
+    exportExpensesToExcel(
+      exportData,
+      `Monin ${dateRangePreview(dateRange)}.xlsx`
+    );
+
+    setIsSubmitLoading(false);
+    onOpenChange(false);
+
+    return;
   }
 
   return (
