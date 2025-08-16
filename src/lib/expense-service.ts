@@ -10,6 +10,7 @@ import {
   query,
   Timestamp,
   where,
+  updateDoc,
 } from "firebase/firestore";
 import { Converter } from "./utils";
 
@@ -71,6 +72,17 @@ export async function createExpense(expense: Omit<Expense, "id">) {
     return { ...expense, id: docRef.id };
   } catch (error) {
     console.error("Error creating expense:", error);
+    return null;
+  }
+}
+
+export async function updateExpense(id: string, expense: Omit<Expense, "id">) {
+  try {
+    const docRef = doc(db, "expenses", id).withConverter(Converter<Expense>());
+    await updateDoc(docRef, expense);
+    return { ...expense, id };
+  } catch (error) {
+    console.error("Error updating expense:", error);
     return null;
   }
 }

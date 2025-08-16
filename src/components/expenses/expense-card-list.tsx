@@ -3,27 +3,49 @@ import type { Expense } from "@/types";
 import { ExpenseCard } from "./expense-card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { AlertCircleIcon } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
 
 export default function ExpenseCardList({
   onActionDelete = () => {},
+  onActionEdit = () => {},
 }: {
   onActionDelete?: (expense: Expense) => void;
+  onActionEdit?: (expense: Expense) => void;
 }) {
-  const { expenses } = useExpense();
+  const { expenses, query } = useExpense();
 
-  // const sortedExpenses = expenses.sort((a, b) => {
-  //   const compareTrxDate =
-  //     new Date(b.transaction_date).getTime() -
-  //     new Date(a.transaction_date).getTime();
+  if (query.error) {
+    return (
+      <div className="h-96">
+        <Alert variant="destructive" className="">
+          <AlertCircleIcon />
+          <AlertTitle>Unable to get data.</AlertTitle>
+          <AlertDescription>
+            <p>{query.error.message}</p>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
-  //   if (compareTrxDate !== 0) {
-  //     return compareTrxDate;
-  //   }
-
-  //   const compateDate = new Date(b.date).getTime() - new Date(a.date).getTime();
-
-  //   return compateDate;
-  // });
+  if (!query.data) {
+    return (
+      <div className="grid lg:grid-cols-2 gap-x-8 divide-y [&_.expense-card:last-child]:border-b max-h-96 overflow-y-auto px-1">
+        {Array.from({ length: 10 }).map(() => (
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="space-y-2 py-2.5">
+              <Skeleton className="h-3.5 w-[150px]" />
+              <Skeleton className="h-4 w-[300px]" />
+              <Skeleton className="h-3 w-[200px]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid lg:grid-cols-2 gap-x-8 divide-y [&_.expense-card:last-child]:border-b max-h-96 overflow-y-auto px-1">
@@ -36,16 +58,28 @@ export default function ExpenseCardList({
           </PopoverTrigger>
           <PopoverContent align="start" className="space-y-4">
             <p className="leading-none font-medium">Actions</p>
-            <Button
-              variant={"destructive"}
-              size={"sm"}
-              className="w-full cursor-pointer"
-              onClick={() => {
-                onActionDelete(expense);
-              }}
-            >
-              Delete
-            </Button>
+            <div className="space-y-2">
+              <Button
+                variant={"outline"}
+                size={"sm"}
+                className="w-full cursor-pointer"
+                onClick={() => {
+                  onActionEdit(expense);
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant={"destructive"}
+                size={"sm"}
+                className="w-full cursor-pointer"
+                onClick={() => {
+                  onActionDelete(expense);
+                }}
+              >
+                Delete
+              </Button>
+            </div>
           </PopoverContent>
         </Popover>
       ))}

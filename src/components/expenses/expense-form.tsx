@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns/format";
 import { parse } from "date-fns/parse";
-import { createExpense } from "@/lib/expense-service";
+import { createExpense, updateExpense } from "@/lib/expense-service";
 import { Timestamp } from "firebase/firestore";
 import PriceInput from "../price-input";
 
@@ -43,20 +43,46 @@ const expenseInitialState: ExpenseFormInputs = {
   transaction_type: "expense",
 };
 
+function getInitialState(expense?: Expense): ExpenseFormInputs {
+  if (!expense) {
+    return expenseInitialState;
+  }
+  return {
+    description: expense.description,
+    amountStr: expense.amount.toString(),
+    category: expense.category,
+    trxDate: format(expense.transaction_date.toDate(), "yyyy-MM-dd"),
+    transaction_type: expense.transaction_type,
+  };
+}
+
 export function ExpenseForm({
   onSuccess = () => {},
+  existingExpense,
 }: {
   onSuccess?: () => void;
+  existingExpense?: Expense;
 }) {
   const { categories, setCategories, query } = useExpense();
   const { user } = useAuth();
-  const [expense, setExpense] =
-    useState<ExpenseFormInputs>(expenseInitialState);
+  const [expense, setExpense] = useState<ExpenseFormInputs>(
+    getInitialState(existingExpense)
+  );
 
   const mutation = useMutation({
-    mutationFn: (data: Omit<Expense, "id">) => createExpense(data),
+    mutationFn: (data: Omit<Expense, "id">) => {
+      if (existingExpense) {
+        return updateExpense(existingExpense.id, data);
+      } else {
+        return createExpense(data);
+      }
+    },
     onMutate: () => {
-      const mutationToastId = toast.loading("Creating expense record...");
+      const toastMessage = existingExpense
+        ? "Updating expense record..."
+        : "Creating expense record...";
+      const mutationToastId = toast.loading(toastMessage);
+
       return {
         toastId: mutationToastId,
       };
@@ -64,9 +90,14 @@ export function ExpenseForm({
     onSuccess: (_, __, context) => {
       query.refetch();
       setExpense(expenseInitialState);
-      toast.success("Success creating expense record", {
+
+      const toastMessage = existingExpense
+        ? "Success updating expense record"
+        : "Success creating expense record";
+      toast.success(toastMessage, {
         id: context.toastId,
       });
+
       onSuccess();
     },
   });
@@ -187,7 +218,11 @@ export function ExpenseForm({
         className="w-full cursor-pointer"
         disabled={mutation.isPending}
       >
-        {mutation.isPending ? "Processing..." : "Add Expense"}
+        {mutation.isPending
+          ? "Processing..."
+          : existingExpense
+          ? "Update"
+          : "Create"}
       </Button>
     </form>
   );

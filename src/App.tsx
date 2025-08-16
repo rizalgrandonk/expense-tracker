@@ -82,7 +82,7 @@ function App() {
           {user && <UserButton />}
           <h1 className="text-2xl font-bold">Monin</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {user && (
             <Button
               onClick={() => setIsFormOpen(true)}
@@ -101,11 +101,6 @@ function App() {
       <main className="container mx-auto px-2">
         {user ? (
           <>
-            {expenseQuery.isLoading || !expenseQuery.data ? (
-              <div className="text-center py-12">
-                <h2 className="text-xl font-semibold mb-4">Loading...</h2>
-              </div>
-            ) : null}
             <div className="py-5">
               <Card className="flex flex-col gap-3 justify-center py-5 px-5 border-0 bg-primary-gradient text-white">
                 <h3 className="text-lg">Total Monin out this month</h3>
@@ -115,14 +110,23 @@ function App() {
               </Card>
             </div>
 
-            <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <Sheet
+              open={isFormOpen}
+              onOpenChange={(val) => {
+                setIsFormOpen(val);
+                setSelectedExpense(undefined);
+              }}
+            >
               <SheetContent>
                 <SheetHeader>
                   <SheetTitle className="font-semibold text-lg">
                     Add New Expense
                   </SheetTitle>
                 </SheetHeader>
-                <ExpenseForm onSuccess={() => setIsFormOpen(false)} />
+                <ExpenseForm
+                  existingExpense={selectedExpense}
+                  onSuccess={() => setIsFormOpen(false)}
+                />
               </SheetContent>
             </Sheet>
 
@@ -164,6 +168,10 @@ function App() {
                     setSelectedExpense(item);
                     setIsModalDeleteOpen(true);
                   }}
+                  onActionEdit={(item) => {
+                    setSelectedExpense(item);
+                    setIsFormOpen(true);
+                  }}
                 />
               )}
               {listType === "table" && (
@@ -171,6 +179,10 @@ function App() {
                   onActionDelete={(item) => {
                     setSelectedExpense(item);
                     setIsModalDeleteOpen(true);
+                  }}
+                  onActionEdit={(item) => {
+                    setSelectedExpense(item);
+                    setIsFormOpen(true);
                   }}
                 />
               )}

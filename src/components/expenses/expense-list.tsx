@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns/format";
 import { cn, formatCurrency } from "@/lib/utils";
-import { ArrowDown, ArrowUp, MoreHorizontal, Trash } from "lucide-react";
+import { ArrowDown, ArrowUp, Edit, MoreHorizontal, Trash } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { useExpense } from "@/hooks/useExpense";
 import { Button } from "../ui/button";
@@ -24,24 +24,12 @@ import UserAvatar from "../user-avatar";
 
 export function ExpenseList({
   onActionDelete = () => {},
+  onActionEdit = () => {},
 }: {
   onActionDelete?: (expense: Expense) => void;
+  onActionEdit?: (expense: Expense) => void;
 }) {
   const { expenses } = useExpense();
-
-  // const sortedExpenses = expenses.sort((a, b) => {
-  //   const compareTrxDate =
-  //     new Date(b.transaction_date).getTime() -
-  //     new Date(a.transaction_date).getTime();
-
-  //   if (compareTrxDate !== 0) {
-  //     return compareTrxDate;
-  //   }
-
-  //   const compateDate = new Date(b.date).getTime() - new Date(a.date).getTime();
-
-  //   return compateDate;
-  // });
 
   return (
     <>
@@ -101,6 +89,14 @@ export function ExpenseList({
                       }}
                     >
                       <Trash /> Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        onActionEdit(expense);
+                      }}
+                    >
+                      <Edit /> Edit
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
